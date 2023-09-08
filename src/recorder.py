@@ -1,95 +1,89 @@
 import pyaudio
 import wave
 import time
-import os
 import tkinter as tk
+import customtkinter as ctk
+from tkinter import filedialog
 import threading
-from widgets.window import window
-
-audio = pyaudio.PyAudio()
 
 
 class Recorder:
-    def __init__(self) -> None:
+    def __init__(self, display:ctk.CTkTabview) -> None:
         self.recording = False
-        self.can_record = True
-        self.device = audio.get_default_input_device_info()
+        self.audio = pyaudio.PyAudio()
+        self.device = self.audio.get_default_input_device_info()
 
-        self.button = tk.Button(master=window.record_tab, text="REC", font=("Arial", 50, "bold"),
+        self.button = ctk.CTkButton(master=display, text="•", font=("Arial", 70, "bold"),
                                 command=self.record_button)
-        self.button.pack()
+        self.button.place(relx=0.3, rely=0.4, relwidth=0.11, relheight=0.15)
+
+        self.resetbutton = ctk.CTkButton(master=display, text="■", font=("Arial", 40, "bold"),
+                                command=self.record_button)
+        self.resetbutton.place(relx=0.17, rely=0.4, relwidth=0.11, relheight=0.15)
         
-        self.label = tk.Label(master=window.record_tab, text="00:00:00")
-        self.label.pack()
+        self.label = ctk.CTkLabel(master=display, text="00:00:00", fg_color="transparent", font=("Arial", 30, "bold"))
+        self.label.place(relx=0.5, rely=0.4, relheight=0.15, relwidth=0.2)
 
-        self.selected_device_label = tk.Label(master=window.record_tab, text=f"{self.device.get('name')}")
-        self.selected_device_label.pack()
-
-        self.device_selected = tk.StringVar(window.record_tab)
+        self.device_selected = tk.StringVar(master=display)
         self.device_selected.set(self.device.get('name'))
-
-        self.device_names = [audio.get_device_info_by_index(i).get('name') for i in range(audio.get_device_count())]
+        self.device_names = [self.audio.get_device_info_by_index(i).get('name') for i in range(self.audio.get_device_count())]
    
-        self.device_selector = tk.OptionMenu(window.record_tab, self.device_selected, self.device.get('name'), *self.device_names, command=self.select_device)
-        self.device_selector.pack()
+        self.device_selector = tk.OptionMenu(display, self.device_selected, self.device.get('name'), *self.device_names, command=self.select_device)
+        self.device_selector.place(relx=0.5, rely=0.55, relheight=0.08, relwidth=0.2)
 
-    def select_device(self, *args):
+        self.frames = []
+
+    def select_device(self, *args) -> None:
         selected = self.device_selected.get()
         self.device = self.device_names.index(selected)
-        self.selected_device_label.config(text=selected)
 
     def record_button(self) -> None:
         if self.recording:
             self.recording = False
-            self.button
-        elif self.can_record:
+        else:
             self.recording = True
-            self.can_record = False
-            self.label = tk.Label(text="00:00:00")
-            self.button.config(fg="red")
+            if len(self.frames):
+                self.label.configure(text="00:00:00")
             threading.Thread(target=self.record).start()
 
 
-    def record(self, record_name:str="new_record", ch_count:int=1, rate:int=44100, fpb:int=1024) -> None:
-        stream = audio.open(input_device_index=self.device.get('index'), format=pyaudio.paInt16, channels=ch_count, rate=rate, input=True, frames_per_buffer=fpb)
-        frames = []
+    def record(self, ch_count:int=1, rate:int=44100, fpb:int=1024) -> None:
+        self.audio = pyaudio.PyAudio()
+        
+        stream = self.audio.open(input_device_index=self.device.get('index'), format=pyaudio.paInt16, channels=ch_count, rate=rate, input=True, frames_per_buffer=fpb)
 
         start = time.time()
 
         while self.recording:
             data = stream.read(1024)
-            frames.append(data)
+            self.frames.append(data)
 
             passed = time.time() - start
             secs = passed % 60
             mins = passed // 60
             hours = mins // 60
 
-            self.label.config(text=f"{int(hours):02d}:{int(mins):02d}:{int(secs):02d}")
+            self.label.configure(text=f"{int(hours):02d}:{int(mins):02d}:{int(secs):02d}")
 
         stream.stop_stream()
         stream.close()
-        audio.terminate()
-
-        if record_name.endswith(".wav"):
-            record_name = record_name[:-4]
-
-        i = 1
-
-        if os.path.exists(f"{record_name}.wav"):
-            while True:
-                if os.path.exists(f"{record_name}({i}).wav"):
-                    i += 1
-                else:
-                    record_name = f"{record_name}({i}).wav"
-                    break
+        self.audio.terminate()
                 
+        save_file = filedialog.asksaveasfilename(defaultextension=".wav", filetypes=[
+            ("Wave file", ".wav")
+        ])
 
-        save = wave.open(f"{record_name}.wav", "wb")
+        if type(save_file) != str:
+            self.recording = False
+            return
+
+        save = wave.open(save_file, "wb")
         save.setnchannels(ch_count)
-        save.setsampwidth(audio.get_sample_size(pyaudio.paInt16))
+        save.setsampwidth(self.audio.get_sample_size(pyaudio.paInt16))
         save.setframerate(rate)
-        save.writeframes(b''.join(frames))
+        save.writeframes(b''.join(self.frames))
         save.close()
-        self.can_record = True
+
+        self.frames.clear()
+
 

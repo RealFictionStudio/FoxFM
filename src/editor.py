@@ -1,8 +1,9 @@
 from moviepy.editor import concatenate_audioclips, concatenate_videoclips, AudioFileClip, VideoFileClip, CompositeVideoClip, CompositeAudioClip, preview
+import customtkinter as ctk
 
 class Editor:
 
-    def __init__(self) -> None:
+    def __init__(self, display:ctk.CTkTabview) -> None:
         self.audio_files = []
         self.video_files = []
 
