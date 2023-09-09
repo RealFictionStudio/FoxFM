@@ -15,21 +15,21 @@ class Recorder:
 
         self.button = ctk.CTkButton(master=display, text="•", font=("Arial", 70, "bold"),
                                 command=self.record_button)
-        self.button.place(relx=0.3, rely=0.4, relwidth=0.11, relheight=0.15)
+        self.button.place(relx=0.35, rely=0.4, relwidth=0.11, relheight=0.15)
 
         self.resetbutton = ctk.CTkButton(master=display, text="■", font=("Arial", 40, "bold"),
                                 command=self.record_button)
-        self.resetbutton.place(relx=0.17, rely=0.4, relwidth=0.11, relheight=0.15)
+        self.resetbutton.place(relx=0.2, rely=0.4, relwidth=0.11, relheight=0.15)
         
         self.label = ctk.CTkLabel(master=display, text="00:00:00", fg_color="transparent", font=("Arial", 30, "bold"))
         self.label.place(relx=0.5, rely=0.4, relheight=0.15, relwidth=0.2)
 
-        self.device_selected = tk.StringVar(master=display)
-        self.device_selected.set(self.device.get('name'))
+        self.device_selected = ctk.StringVar(value=self.device.get('name'))
         self.device_names = [self.audio.get_device_info_by_index(i).get('name') for i in range(self.audio.get_device_count())]
    
-        self.device_selector = tk.OptionMenu(display, self.device_selected, self.device.get('name'), *self.device_names, command=self.select_device)
-        self.device_selector.place(relx=0.5, rely=0.55, relheight=0.08, relwidth=0.2)
+        self.device_selector = ctk.CTkOptionMenu(master=display, values=self.device_names,
+                                command=self.select_device, variable=self.device_selected)
+        self.device_selector.place(relx=0.4, rely=0.8, relheight=0.08, relwidth=0.2)
 
         self.frames = []
 
