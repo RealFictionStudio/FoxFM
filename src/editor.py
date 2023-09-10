@@ -1,17 +1,28 @@
 from moviepy.editor import concatenate_audioclips, concatenate_videoclips, AudioFileClip, VideoFileClip, CompositeVideoClip, CompositeAudioClip, preview
 import customtkinter as ctk
+from tkinter import filedialog
+from widgets.audioclip import AudioClip
 
 class Editor:
 
     def __init__(self, display:ctk.CTkTabview) -> None:
+        
+        self.display = display
+
         self.audio_files = []
         self.video_files = []
 
         self.joined_audio:AudioFileClip
         self.joined_video:VideoFileClip
         self.is_no_audio_update = True
-        self.is_no_video_update = True 
+        self.is_no_video_update = True
 
+    
+    def load_audio(self):
+        audio_files = filedialog.askopenfilenames(title="Open audio file", filetypes=(("MP3 (Lossy compression)", "*.mp3"),
+                                                                        ("Wave (Lossless compression)", "*.wav")))
+        for file in audio_files:
+            AudioClip(self.display, file)
 
     def add_audio_to_queue(self, file_name:str) -> None:
         self.audio_files.append(AudioFileClip(file_name))
