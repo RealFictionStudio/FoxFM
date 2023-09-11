@@ -1,8 +1,9 @@
 import tkinter as tk
-from tkinter import ttk
 from tkinter.messagebox import askokcancel, WARNING
 import customtkinter as ctk
 from recorder import Recorder
+from editor import Editor
+from load_config import load_config_settings
 
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("green")
@@ -13,21 +14,21 @@ class Window:
         self.root = ctk.CTk()
         self.root.geometry("800x600")
         self.root.resizable(True, True)
+        self.root.title("FoxFM Studio")
         
         self.tabview = ctk.CTkTabview(master=self.root)
         self.tabview.pack(expand=True, fill="both")
 
-        self.tabview.add("record")  # add tab at the end
+        self.tabview.add("record")
         self.tabview.add("edit")
-        self.tabview.add("upload")  # add tab at the end
-        self.tabview.set("record")  # set currently visible tab
+        self.tabview.add("upload")
+        self.tabview.set("record")
 
         self.child_w:tk.Toplevel
 
 
     def create_loading(self) -> None:
-        child_w = tk.Toplevel(self.root)
-        print("\nCHILD CREATED\n")
+        child_w = ctk.Toplevel(self.root)
 
         def on_closing_before_saved():
             if askokcancel("Quit", "Do you want to quit?\nThis is going to corrupt current operation", icon=WARNING):
@@ -47,6 +48,7 @@ class Window:
 
     def run_app(self) -> None:
         Recorder(self.tabview.tab("record"))
+        Editor(self.tabview.tab("edit"))
         self.root.mainloop()
 
 

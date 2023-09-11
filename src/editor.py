@@ -1,7 +1,9 @@
 from moviepy.editor import concatenate_audioclips, concatenate_videoclips, AudioFileClip, VideoFileClip, CompositeVideoClip, CompositeAudioClip, preview
 import customtkinter as ctk
 from tkinter import filedialog
-from widgets.audioclip import AudioClip
+from widgets.clips import VideoClip, AudioClip
+from widgets.scroll_object import Scroll_Object
+
 
 class Editor:
 
@@ -17,12 +19,40 @@ class Editor:
         self.is_no_audio_update = True
         self.is_no_video_update = True
 
-    
-    def load_audio(self):
-        audio_files = filedialog.askopenfilenames(title="Open audio file", filetypes=(("MP3 (Lossy compression)", "*.mp3"),
-                                                                        ("Wave (Lossless compression)", "*.wav")))
-        for file in audio_files:
-            AudioClip(self.display, file)
+        self.tabview = ctk.CTkTabview(master=display)
+        self.tabview.place(relx=0.02, rely=0, relwidth=0.25, relheight=0.8)
+
+        self.tabview.add("audio")
+        self.tabview.add("video")
+        self.tabview.set("audio")
+
+        self.audio_files_widgets = Scroll_Object(self.tabview.tab("audio"), width=300, height=400)
+        self.audio_files_widgets.place(relx=0, rely=0, relwidth=1, relheight=1)
+
+        self.clip_load_button = ctk.CTkButton(display, text="Load Files", command=self.load_files)
+        self.clip_load_button.place(relx=0.04, rely=0.9, relwidth=0.2, relheight=0.08)
+
+        self.video_files_widgets = Scroll_Object(self.tabview.tab("video"), width=300, height=550)
+        self.video_files_widgets.place(relx=0, rely=0, relwidth=1, relheight=1)
+
+
+    def load_files(self):
+        video_file_types = [".mp4"]
+        audio_file_types = [".mp3", ".wav"]
+
+        opened_files = filedialog.askopenfilenames(title="Open audio file", filetypes=(("audio files", audio_file_types),
+                                                                                       ("video files", video_file_types)))
+        for file in opened_files:
+            ext = "." + file.split(".")[1]
+            if ext in audio_file_types:
+                nc = AudioFileClip(self.audio_files_widgets, file)
+                AudioClip(self.audio_files_widgets, nc)
+                self.audio_files.append(nc)
+            else:
+                nc = VideoFileClip(self.video_files_widgets, file)
+                VideoClip(self.audio_files_widgets, nc)
+                self.video_files.append(nc)
+
 
     def add_audio_to_queue(self, file_name:str) -> None:
         self.audio_files.append(AudioFileClip(file_name))
