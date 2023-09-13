@@ -1,9 +1,10 @@
 from moviepy.editor import concatenate_audioclips, concatenate_videoclips, AudioFileClip, VideoFileClip, CompositeVideoClip, CompositeAudioClip, preview
 import customtkinter as ctk
 from tkinter import filedialog
-from widgets.clips import VideoClip, AudioClip
-from widgets.scroll_object import Scroll_Object
+from tkinter.messagebox import askokcancel
+from widgets.clips import Clip, audio_queue, video_queue, audio_changed, video_changed
 
+import os
 
 class Editor:
 
@@ -11,11 +12,9 @@ class Editor:
         
         self.display = display
 
-        self.audio_files = []
-        self.video_files = []
+        self.joined_audio = None
+        self.joined_video = None
 
-        self.joined_audio:AudioFileClip
-        self.joined_video:VideoFileClip
         self.is_no_audio_update = True
         self.is_no_video_update = True
 
@@ -26,14 +25,35 @@ class Editor:
         self.tabview.add("video")
         self.tabview.set("audio")
 
-        self.audio_files_widgets = Scroll_Object(self.tabview.tab("audio"), width=300, height=400)
-        self.audio_files_widgets.place(relx=0, rely=0, relwidth=1, relheight=1)
+        self.audio_files_widgets = ctk.CTkScrollableFrame(self.tabview.tab("audio"), width=300, height=460)
+        self.audio_files_widgets.grid(row=0, column=0, padx=0, pady=0)
+
+        self.video_files_widgets = ctk.CTkScrollableFrame(self.tabview.tab("video"), width=300, height=460)
+        self.video_files_widgets.grid(row=0, column=0, padx=0, pady=0)
 
         self.clip_load_button = ctk.CTkButton(display, text="Load Files", command=self.load_files)
-        self.clip_load_button.place(relx=0.04, rely=0.9, relwidth=0.2, relheight=0.08)
+        self.clip_load_button.place(relx=0.04, rely=0.85, relwidth=0.2, relheight=0.08)
 
-        self.video_files_widgets = Scroll_Object(self.tabview.tab("video"), width=300, height=550)
-        self.video_files_widgets.place(relx=0, rely=0, relwidth=1, relheight=1)
+        self.audio_track = ctk.CTkScrollableFrame(self.display, height=25, orientation="vertical")
+        self.audio_track.place(relx=0.35, rely=0.1, relwidth=0.24, relheight=0.8)
+
+        self.play_audio = ctk.CTkButton(self.display, 40, 40, 25, text="♫", font=("Arial", 40, "bold"), command=self.play_test_audio)
+        self.play_audio.place(relx=0.29, rely=0.12, relwidth=0.05, relheight=0.1)
+
+        self.video_track = ctk.CTkScrollableFrame(self.display, height=25, orientation="vertical")
+        self.video_track.place(relx=0.7, rely=0.1, relwidth=0.24, relheight=0.8)
+
+        self.play_video = ctk.CTkButton(self.display, 40, 40, 25, text="►", font=("Arial", 40, "bold"), command=self.play_test_audio)
+        #self.play_video.place(relx=0.64, rely=0.12, relwidth=0.05, relheight=0.1)
+
+        self.play_all = ctk.CTkButton(self.display, 40, 40, 25, text="►", font=("Arial", 40, "bold"), command=self.play_test_whole_clip)
+        #self.play_all.place(relx=0.3, rely=0.58, relwidth=0.05, relheight=0.1)
+
+        audio_queue_label = ctk.CTkLabel(display, text="Audio queue")
+        audio_queue_label.place(relx=0.42, rely=0.05, relwidth=0.1, relheight=0.05)
+
+        video_queue_label = ctk.CTkLabel(display, text="Video queue")
+        video_queue_label.place(relx=0.77, rely=0.05, relwidth=0.1, relheight=0.05)
 
 
     def load_files(self):
@@ -45,62 +65,41 @@ class Editor:
         for file in opened_files:
             ext = "." + file.split(".")[1]
             if ext in audio_file_types:
-                nc = AudioFileClip(self.audio_files_widgets, file)
-                AudioClip(self.audio_files_widgets, nc)
-                self.audio_files.append(nc)
+                new_clip = Clip(self.audio_files_widgets,self.audio_track,filename=file)
+                new_clip.horizontal_widgets()
+                new_clip.clip = AudioFileClip(file)
             else:
-                nc = VideoFileClip(self.video_files_widgets, file)
-                VideoClip(self.audio_files_widgets, nc)
-                self.video_files.append(nc)
+                new_clip = Clip(self.video_track,self.audio_files_widgets,filename=file)
+                new_clip.horizontal_widgets()
+                new_clip.clip = VideoFileClip(file)
 
 
-    def add_audio_to_queue(self, file_name:str) -> None:
-        self.audio_files.append(AudioFileClip(file_name))
-        self.is_no_audio_update = False
-
-
-    def delete_audio_from_queue(self, clip_name:str) -> None:
-        self.audio_files.pop(clip_name)
-        self.is_no_audio_update = False
-
-
-    def add_video_to_clip(self, file_name:str) -> None:
-        self.video_files.append(VideoFileClip(file_name))
-        self.is_no_video_update = False
-
-
-    def delete_video_from_clip(self, clip_name:str) -> None:
-        self.video_files.pop(clip_name)
-        self.is_no_video_update = False
-
-
-    def join_all_audio(self) -> bool:
-        if len(self.audio_files) > 0:
-            self.joined_audio = concatenate_audioclips(self.audio_files)
-            self.is_no_audio_update = True
-            return True
+    def join_all_audio(self):
+        print(len(audio_queue))
+        if len(audio_queue.items()) > 0:
+            self.joined_audio = concatenate_audioclips([audio_queue[f] for f in audio_queue.keys()])
+            audio_changed = False
         else:
-            return False
+            askokcancel(title="Empty queue", message="No audio files in a queue")
 
     
-    def join_all_video(self) -> bool:
-        if len(self.video_files) > 0:
-            self.joined_video = concatenate_videoclips(self.video_files)
-            self.is_no_video_update = True
-            return True
+    def join_all_video(self):
+        if len(video_queue.items()) > 0:
+            self.joined_video = concatenate_videoclips([video_queue[f] for f in video_queue.keys()])
+            video_changed = False
         else:
-            return False
+            askokcancel(title="Empty queue", message="No video files in a queue")
         
 
     def play_test_audio(self) -> None:
-        if not self.is_no_audio_update:
+        if audio_changed or self.joined_audio is None:
             self.join_all_audio()
 
         preview(self.joined_audio)
 
 
     def play_test_video(self) -> None:
-        if not self.is_no_video_update:
+        if video_changed or self.joined_video is None:
             self.join_all_video()
 
         # preview video

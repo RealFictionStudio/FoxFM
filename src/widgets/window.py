@@ -14,13 +14,13 @@ class Window:
         self.root = ctk.CTk()
         self.root.geometry("800x600")
         self.root.resizable(True, True)
-        self.root.title("FoxFM Studio")
+        self.root.title("FoxFM Studio v0.1")
         
         self.tabview = ctk.CTkTabview(master=self.root)
         self.tabview.pack(expand=True, fill="both")
 
         self.tabview.add("record")
-        self.tabview.add("edit")
+        self.tabview.add("  edit  ")
         self.tabview.add("upload")
         self.tabview.set("record")
 
@@ -48,7 +48,7 @@ class Window:
 
     def run_app(self) -> None:
         Recorder(self.tabview.tab("record"))
-        Editor(self.tabview.tab("edit"))
+        Editor(self.tabview.tab("  edit  "))
         self.root.mainloop()
 
 
