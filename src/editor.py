@@ -1,5 +1,6 @@
 from moviepy.editor import concatenate_audioclips, concatenate_videoclips, AudioFileClip, VideoFileClip, CompositeVideoClip, CompositeAudioClip, preview
 import customtkinter as ctk
+import tkinter as tk
 from tkinter import filedialog
 from tkinter.messagebox import askokcancel
 from widgets.clips import Clip, audio_queue, video_queue, audio_changed, video_changed
@@ -55,6 +56,13 @@ class Editor:
         video_queue_label = ctk.CTkLabel(display, text="Video queue")
         video_queue_label.place(relx=0.77, rely=0.05, relwidth=0.1, relheight=0.05)
 
+        self.export_button = ctk.CTkButton(self.display, text="Export", command=self.export_form)
+        self.export_button.place(relx=0.55, rely=0.9, relwidth=0.18, relheight=0.08)
+
+        self.export_window = None
+        self.export_mode = tk.IntVar(value=0)
+        self.include_video_mode = tk.BooleanVar(value=False)
+
 
     def load_files(self):
         video_file_types = [".mp4"]
@@ -69,7 +77,7 @@ class Editor:
                 new_clip.horizontal_widgets()
                 new_clip.clip = AudioFileClip(file)
             else:
-                new_clip = Clip(self.video_track,self.audio_files_widgets,filename=file)
+                new_clip = Clip(self.video_files_widgets,self.video_track,filename=file)
                 new_clip.horizontal_widgets()
                 new_clip.clip = VideoFileClip(file)
 
@@ -108,43 +116,91 @@ class Editor:
     def play_test_whole_clip(self) -> None:
         ...
 
+    
+    def clean_window(self):
+        self.export_window.destroy()
+        self.export_window = None
 
-    def export_audio(self, file_name:str="output_audio") -> bool:
-        if not self.join_all_audio():
-            return False
-        
-        self.joined_audio.write_audiofile(file_name + ".wav")
+
+    def export_form(self):
+        if len(audio_queue.items()) == 0 or len(video_queue.items()) == 0:
+            askokcancel(title="Empty queue", message="Audio and Video queue are empty")
+            return
+        elif self.export_window is not None:
+            askokcancel(title="Exporting in process", message="Export window already opened")
+            return
+        else:
+            self.export_window = ctk.CTkToplevel(self.display)
+            self.export_window.geometry("400x300")
+            self.export_window.resizable(False,False)
+            self.export_window.title("Export")
+            self.export_window.protocol("WM_DELETE_WINDOW", self.clean_window)
+
+            mode1 = ctk.CTkRadioButton(self.export_window, text="Audio length based", value=0, variable=self.export_mode)
+            mode1.place(x=10,y=30)
+            mode2 = ctk.CTkRadioButton(self.export_window, text="Video length based", value=1, variable=self.export_mode)
+            mode2.place(x=250,y=30)
+
+            include_video = ctk.CTkCheckBox(self.export_window, text="Include video", variable=self.include_video_mode, onvalue=True, offvalue=False)
+            include_video.place(x=10, y=100)
+
+            export_button = ctk.CTkButton(self.export_window, text="Export", command=self.export_with_settings)
+            export_button.place(x=130, y=250)
+
+    def export_with_settings(self):
+        if self.include_video_mode.get():
+            if self.export_mode.get() == 0:
+                self.export_whole_clip(True)
+            else:
+                self.export_whole_clip(False)
+        else:
+            self.export_audio()
+        self.clean_window()
+
+
+    def export_audio(self) -> bool:
+        file_name = filedialog.asksaveasfilename(defaultextension=".wav", filetypes=[
+            ("Wave file", ".wav")
+        ])
+
+        self.join_all_audio()
+        self.joined_audio.write_audiofile(file_name)
         return True
     
 
-    def export_video(self, file_name:str="output_video") -> bool:
-        if not self.join_all_video():
-            return False
-
-        self.joined_video.write_videofile(file_name + ".mp4")
+    def export_video(self) -> bool:
+        file_name = filedialog.asksaveasfilename(defaultextension=".mp4", filetypes=[
+            ("MP4 file", ".mp4")
+        ])
+        self.join_all_video()
+        self.joined_video.write_videofile(file_name)
         return True   
     
     
-    def export_whole_clip(self, mode:bool, file_name:str="output") -> bool:
+    def export_whole_clip(self, mode:bool) -> bool:
         # True -> based on audio length
         # False -> based on video length
 
-        if not self.join_all_audio() and mode or not self.join_all_video() and not mode:
-            return False
+        self.join_all_audio()
+        self.join_all_video()
+
+        file_name = filedialog.asksaveasfilename(defaultextension=".mp4", filetypes=[
+            ("MP4 file", ".mp4")
+        ])
 
         if mode:
             duration = self.joined_audio.duration
             final_video = CompositeVideoClip([self.joined_video.set_duration(duration)])
 
             export = final_video.set_audio(self.joined_audio)
-            export.write_videofile(file_name + ".mp4")
+            export.write_videofile(file_name)
         
         else:
             duration = self.joined_video.duration
             final_audio = CompositeAudioClip([self.joined_audio.set_duration(duration)])
 
             export = self.joined_video.set_audio(final_audio)
-            export.write_videofile(file_name + ".mp4", fps=32)
+            export.write_videofile(file_name, fps=32)
 
         return True
         

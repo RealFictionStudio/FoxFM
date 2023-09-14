@@ -16,10 +16,15 @@ video_changed = False
 def get_filename(filename:str):
     length = len(filename.split("/"))
     if length > 1:
-        return filename.split("/")[length-1]
+        fn = filename.split("/")[length - 1]
+        if len(fn) > 15:
+            fn = fn[:13]+"..."
+        return fn
     else:
-        length = len(filename.split("\\")) - 1
-        return filename.split("\\")[length - 1]
+        fn = filename.split("\\")[len(filename.split("\\")) - 1]
+        if len(fn) > 15:
+            fn = fn[:13]+"..."
+        return fn
 
 class Clip():
     def __init__(self, display, vertical_display, filename:str, **kwargs) -> None:
