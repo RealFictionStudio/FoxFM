@@ -16,7 +16,11 @@ class Recorder:
     def __init__(self, display:ctk.CTkTabview) -> None:
         self.recording = False
         self.audio = pyaudio.PyAudio()
-        self.device = self.audio.get_default_input_device_info()
+        self.device
+        try:
+            self.device = self.audio.get_default_input_device_info()
+        except:
+            self.device = {'name':'No device connected'}
 
         self.button = ctk.CTkButton(master=display, text="•", font=("Arial", 70, "bold"),
                                 command=self.record_button)
@@ -58,16 +62,17 @@ class Recorder:
                 showerror("Saving Error", "Nothing is recorded")
 
     def record_button(self) -> None:
-        if self.recording:
-            self.recording = False
-            self.button.configure(text="•", font=("Arial", 70, "bold"))
-            self.resetbutton.configure(text="⬇", font=("Arial", 40, "bold"))
+        if self.device.get('name') != "No device connected":
+            if self.recording:
+                self.recording = False
+                self.button.configure(text="•", font=("Arial", 70, "bold"))
+                self.resetbutton.configure(text="⬇", font=("Arial", 40, "bold"))
 
-        else:
-            self.recording = True
-            self.button.configure(text="| |", font=("Arial", 25, "bold"))
-            self.resetbutton.configure(text="■", font=("Arial", 40, "bold"))
-            threading.Thread(target=self.record).start()
+            else:
+                self.recording = True
+                self.button.configure(text="| |", font=("Arial", 25, "bold"))
+                self.resetbutton.configure(text="■", font=("Arial", 40, "bold"))
+                threading.Thread(target=self.record).start()
 
 
     def record(self) -> None:
