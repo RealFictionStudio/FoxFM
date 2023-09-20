@@ -16,7 +16,7 @@ class Recorder:
     def __init__(self, display:ctk.CTkTabview) -> None:
         self.recording = False
         self.audio = pyaudio.PyAudio()
-        self.device
+        self.device:dict
         try:
             self.device = self.audio.get_default_input_device_info()
         except:
