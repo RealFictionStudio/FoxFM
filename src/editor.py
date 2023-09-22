@@ -66,7 +66,7 @@ class Editor:
 
     def load_files(self):
         video_file_types = [".mp4"]
-        audio_file_types = [".mp3", ".wav"]
+        audio_file_types = [".mp3", ".wav", ".mp4"]
 
         opened_files = filedialog.askopenfilenames(title="Open audio file", filetypes=(("audio files", audio_file_types),
                                                                                        ("video files", video_file_types)))

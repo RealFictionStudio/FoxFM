@@ -1,8 +1,11 @@
 import tkinter as tk
 from tkinter.messagebox import askokcancel, WARNING
 import customtkinter as ctk
+
 from recorder import Recorder
 from editor import Editor
+from downloader import Downloader
+
 from load_config import load_config_settings
 
 ctk.set_appearance_mode("dark")
@@ -19,10 +22,11 @@ class Window:
         self.tabview = ctk.CTkTabview(master=self.root)
         self.tabview.pack(expand=True, fill="both")
 
+        self.tabview.add("download")
         self.tabview.add("record")
         self.tabview.add("  edit  ")
-        self.tabview.add("upload")
-        self.tabview.set("record")
+        #self.tabview.add("upload")
+        self.tabview.set("download")
 
         self.child_w:tk.Toplevel
 
@@ -49,6 +53,7 @@ class Window:
     def run_app(self) -> None:
         Recorder(self.tabview.tab("record"))
         Editor(self.tabview.tab("  edit  "))
+        Downloader(self.tabview.tab("download"), self.root)
         self.root.mainloop()
 
 
