@@ -5,7 +5,9 @@ from tkinter import filedialog
 from tkinter.messagebox import askokcancel
 from widgets.clips import Clip, audio_queue, video_queue, audio_changed, video_changed
 
+import threading
 import os
+
 
 class Editor:
 
@@ -38,16 +40,16 @@ class Editor:
         self.audio_track = ctk.CTkScrollableFrame(self.display, height=25, orientation="vertical")
         self.audio_track.place(relx=0.35, rely=0.1, relwidth=0.24, relheight=0.8)
 
-        self.play_audio = ctk.CTkButton(self.display, 40, 40, 25, text="♫", font=("Arial", 40, "bold"), command=self.play_test_audio)
-        self.play_audio.place(relx=0.29, rely=0.12, relwidth=0.05, relheight=0.1)
+        #self.play_audio = ctk.CTkButton(self.display, 40, 40, 25, text="♫", font=("Arial", 40, "bold"), command=self.play_test_audio)
+        #self.play_audio.place(relx=0.29, rely=0.12, relwidth=0.05, relheight=0.1)
 
         self.video_track = ctk.CTkScrollableFrame(self.display, height=25, orientation="vertical")
         self.video_track.place(relx=0.7, rely=0.1, relwidth=0.24, relheight=0.8)
 
-        self.play_video = ctk.CTkButton(self.display, 40, 40, 25, text="►", font=("Arial", 40, "bold"), command=self.play_test_audio)
+        #self.play_video = ctk.CTkButton(self.display, 40, 40, 25, text="►", font=("Arial", 40, "bold"), command=self.play_test_audio)
         #self.play_video.place(relx=0.64, rely=0.12, relwidth=0.05, relheight=0.1)
 
-        self.play_all = ctk.CTkButton(self.display, 40, 40, 25, text="►", font=("Arial", 40, "bold"), command=self.play_test_whole_clip)
+        #self.play_all = ctk.CTkButton(self.display, 40, 40, 25, text="►", font=("Arial", 40, "bold"), command=self.play_test_whole_clip)
         #self.play_all.place(relx=0.3, rely=0.58, relwidth=0.05, relheight=0.1)
 
         audio_queue_label = ctk.CTkLabel(display, text="Audio queue")
@@ -62,6 +64,8 @@ class Editor:
         self.export_window = None
         self.export_mode = tk.IntVar(value=0)
         self.include_video_mode = tk.BooleanVar(value=False)
+
+        self.audio_playtest = False
 
 
     def load_files(self):
@@ -99,12 +103,16 @@ class Editor:
             askokcancel(title="Empty queue", message="No video files in a queue")
         
 
+    def preview_audio(self):
+        preview(self.joined_audio)
+
+
     def play_test_audio(self) -> None:
         if audio_changed or self.joined_audio is None:
             self.join_all_audio()
 
-        preview(self.joined_audio)
-
+        threading.Thread(target=self.preview_audio)
+        
 
     def play_test_video(self) -> None:
         if video_changed or self.joined_video is None:
