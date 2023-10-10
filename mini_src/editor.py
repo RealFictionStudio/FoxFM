@@ -1,4 +1,4 @@
-from moviepy.editor import AudioFileClip, VideoFileClip
+from moviepy.editor import AudioFileClip
 import customtkinter as ctk
 import tkinter as tk
 from tkinter import filedialog
@@ -33,7 +33,7 @@ class Editor:
         self.clip_load_button.place(relx=0.22, rely=0.85, relwidth=0.2, relheight=0.08)
 
         self.audio_track = ctk.CTkScrollableFrame(self.display, height=25, orientation="vertical")
-        self.audio_track.place(relx=0.55, rely=0.07, relwidth=0.24, relheight=0.75)
+        self.audio_track.place(relx=0.55, rely=0.09, relwidth=0.24, relheight=0.73)
 
         #self.play_audio = ctk.CTkButton(self.display, 40, 40, 25, text="♫", font=("Arial", 40, "bold"), command=self.play_test_audio)
         #self.play_audio.place(relx=0.29, rely=0.12, relwidth=0.05, relheight=0.1)
@@ -66,12 +66,15 @@ class Editor:
 
     def join_all_audio(self) -> bool:
         val = 0
+        input_val = self.unify_value.get().strip()
+        print(input_val, type(input_val))
         try:
-            val = float(self.unify_value.get().strip())
+            val = float(input_val)
         except:
             askokcancel(title="Invalid input", message="Value must be integer or floating point number")
             return False
 
+        self.unify_value.set("40")
         print("START UNIFY")
 
         if len(audio_queue.keys()) > 0:
@@ -79,7 +82,7 @@ class Editor:
                 print("UNIFY")
                 modify_volume(audio_queue.get(i).filename, val)
             self.is_no_audio_update = True
-
+            return True
         else:
             askokcancel(title="Empty queue", message="No audio files in a queue")
 
@@ -109,7 +112,7 @@ class Editor:
             modify_audio_label = ctk.CTkLabel(self.export_window, text="Audio volume modifier")
             modify_audio_label.place(x=20, y=170)
 
-            boost_value = ctk.CTkEntry(self.export_window, textvariable=self.unify_value)
+            boost_value = ctk.CTkEntry(self.export_window, textvariable=self.unify_value, placeholder_text="40")
             boost_value.place(x=250, y=170)
 
             export_button = ctk.CTkButton(self.export_window, text="Export", command=self.export_with_settings)
@@ -126,10 +129,12 @@ class Editor:
         
         def export_func():
             self.export_audio()
+            print("AUDIO EXPORTED")
             
             self.clean_window()
-            self.unify_value = None
             self.is_exporting = False
+
+            print("OPERATION END")
  
         Thread(target=export_func).start()
 
@@ -146,6 +151,7 @@ class Editor:
         print("START AUDIO JOIN")
         res = self.join_all_audio()
         if not res:
+            print("**ERROR**")
             return
         print("END AUDIO JOIN")
         export_sounds(file_name)
