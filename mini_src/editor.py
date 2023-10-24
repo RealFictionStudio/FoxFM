@@ -7,7 +7,6 @@ from widgets.clips import Clip, audio_queue
 from audio_modifiers import modify_volume, export_sounds
 from threading import Thread
 
-
 class Editor:
 
     def __init__(self, display:ctk.CTkTabview) -> None:
@@ -34,9 +33,6 @@ class Editor:
 
         self.audio_track = ctk.CTkScrollableFrame(self.display, height=25, orientation="vertical")
         self.audio_track.place(relx=0.55, rely=0.09, relwidth=0.24, relheight=0.73)
-
-        #self.play_audio = ctk.CTkButton(self.display, 40, 40, 25, text="♫", font=("Arial", 40, "bold"), command=self.play_test_audio)
-        #self.play_audio.place(relx=0.29, rely=0.12, relwidth=0.05, relheight=0.1)
 
         self.unify_value = tk.StringVar(value=0)
         self.auto_unify_value = tk.BooleanVar(value=False)

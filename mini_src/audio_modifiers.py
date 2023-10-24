@@ -8,6 +8,10 @@ import os
 all_modified_audios = []
 
 
+def reset():
+    all_modified_audios.clear()
+
+
 def get_path_splitter() -> str:
     p = os.getcwd()
 
