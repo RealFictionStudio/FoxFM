@@ -8,10 +8,15 @@ class Downloading:
     def __init__(self, master_display) -> None:
         self.master = master_display
         self.can_download = True
+        self.download_toplevel:ctk.CTkToplevel
 
 
     def destroy(self):
-        self.master.destroy()
+        self.download_toplevel.destroy()
+
+
+    def start_download(urls:list[str], location:str):
+        for 
 
 
     def download_video(self, video_url:str, download_location:str) -> None:
