@@ -1,30 +1,84 @@
-import pytube
+from pytube import YouTube, Playlist, request
 import customtkinter as ctk
 from tkinter.filedialog import askdirectory
 from tkinter.messagebox import askokcancel
-
+import threading
+import os
 
 class Downloading:
     def __init__(self, master_display) -> None:
         self.master = master_display
         self.can_download = True
+        
         self.download_toplevel:ctk.CTkToplevel
+        self.loading_bar = ctk.CTkProgressBar(self.download_toplevel, orientation='horizontal', mode='determinate')
+        self.download_title = ctk.CTkLabel(self.download_toplevel, text="")
+        self.video_count_label = ctk.CTkLabel(self.download_toplevel, text="0/0")
+        self.cancel_button = ctk.CTkButton(self.download_toplevel, text="Cancel", command=self.destroy)
+
+        self.video_count = 0
+        self.current_video_count = 0
 
 
-    def destroy(self):
+    def destroy(self) -> None:
         self.download_toplevel.destroy()
+        self.can_download = False
 
 
-    def start_download(urls:list[str], location:str):
-        for 
+    def add_download_ui(self) -> None:
+        self.loading_bar.pack()
+        self.download_title.pack()
+        self.cancel_button.place(x=350, y=80)
 
+
+    def update_video_count(self):
+        self.current_video_count += 1
+        self.video_count_label.configure(text=f"{self.current_video_count}/{self.video_count}")
+
+        if self.can_download and self.video_count == self.current_video_count:
+            askokcancel(title="Download Progress", message="Download Compleated!")
+            self.destroy()
+
+
+    def start_download(self, urls:list[str], location:str) -> None:
+        self.can_download = True
+        self.video_count = len(urls)
+        self.download_toplevel = ctk.CTkToplevel(self.master)
+        self.download_toplevel.geometry("400x100")
+        self.download_toplevel.protocol("WM_DELETE_WINDOW", self.destroy)
+        self.download_toplevel.resizable(False, False)
+        self.video_count = len(urls)
+        self.add_download_ui()
+
+        for url in urls:
+            if self.can_download:
+                threading.Thread(target=self.download_video, args=(url, location), daemon=True)
 
     def download_video(self, video_url:str, download_location:str) -> None:
-        video = pytube.YouTube(video_url)
         try:
-            video.streams.get_audio_only().download(download_location)
+            video = YouTube(video_url)
+            stream = video.streams.get_audio_only()
+            filesize = stream.filesize
+
+            with open(f"{download_location}{os.sep}{video.title}.mp4", 'wb') as f:
+                stream = request.stream(stream.url)
+                downloaded = 0
+
+                while True:
+                    if not self.can_download:
+                        break
+
+                    chunk = next(stream, None)
+                    if chunk:
+                        f.write(chunk)
+                        downloaded += len(chunk)
+                        self.loading_bar.set(downloaded / filesize)
+                    else:
+                        break
         except:
             askokcancel(title="Error", message=f"Download error while downloading\n{video_url}")
+
+        self.update_video_count()
 
 
 class Downloader:
@@ -81,14 +135,10 @@ class Downloader:
             
             if self.can_download:
                 if "playlist?list=" in url:
-                    playlist = pytube.Playlist(url)
-                    video_names = [v.title for v in playlist.videos]
-
-                    for k, v in enumerate(playlist.video_urls):
-                        self.url_label.configure(text=video_names[k])
-                        self.download_process.download_video(v, loc)
+                    playlist = Playlist(url)
+                    self.download_process.start_download(list(playlist.video_urls()), loc)
                 else:
-                    self.download_video(video_url=url, download_location=loc)
+                    self.download_process.start_download([url], loc)
             else:
                 print("CANT DOWNLOAD")
 
