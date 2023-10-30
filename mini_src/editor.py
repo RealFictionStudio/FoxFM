@@ -47,8 +47,6 @@ class Editor:
         self.export_mode = tk.IntVar(value=0)
         self.include_video_mode = tk.BooleanVar(value=False)
 
-        self.is_exporting = False
-
 
     def load_files(self):
         audio_file_types = [".mp3", ".wav", ".mp4"]
@@ -121,18 +119,11 @@ class Editor:
             askokcancel(title="In progress", message="Exporting is still in progress, wait until it ends")
             return
         
-        self.is_exporting = True
-        
         def export_func():
             self.export_audio()
-            print("AUDIO EXPORTED")
-            
             self.clean_window()
-            self.is_exporting = False
-
-            print("OPERATION END")
  
-        Thread(target=export_func).start()
+        Thread(target=export_func, daemon=True).start()
 
 
     def export_audio(self) -> str:

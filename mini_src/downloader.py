@@ -13,6 +13,7 @@ class Downloading:
         self.download_toplevel:ctk.CTkToplevel
         self.loading_bar:ctk.CTkProgressBar
         self.cancel_button:ctk.CTkButton
+        self.download_title:ctk.CTkLabel
 
         self.video_count = 0
         self.current_video_count = 0
@@ -30,6 +31,8 @@ class Downloading:
         self.cancel_button = ctk.CTkButton(self.download_toplevel, text="Cancel", command=self.destroy)
         self.loading_bar.place(x=100, y=100)
         self.cancel_button.place(x=130, y=250)
+        self.download_title = ctk.CTkLabel(self.download_toplevel, text="")
+        self.download_title.place(x=0, y=120)
 
 
     def update_video_count(self):
@@ -57,10 +60,12 @@ class Downloading:
                 self.loading_bar.set(0)
                 self.download_video(url, location)
 
+
     def download_video(self, video_url:str, download_location:str) -> None:
         print("DOWNLOADING")
         try:
             video = YouTube(video_url)
+            self.download_title.configure(text=video.title)
             stream = video.streams.get_audio_only()
             filesize = stream.filesize
 
