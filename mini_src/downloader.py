@@ -121,7 +121,7 @@ class Downloader:
             
         if "playlist?list=" in url:
             playlist = Playlist(url)
-            threading.Thread(target=self.download_process.start_download, args=(list(playlist.video_urls()), loc), daemon=True).start()
+            threading.Thread(target=self.download_process.start_download, args=(list(playlist.video_urls), loc), daemon=True).start()
         else:
             threading.Thread(target=self.download_process.start_download, args=([url], loc), daemon=True).start()
             
