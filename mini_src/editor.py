@@ -47,6 +47,10 @@ class Editor:
         self.export_mode = tk.IntVar(value=0)
         self.include_video_mode = tk.BooleanVar(value=False)
 
+        self.can_export = True
+        self.export_progress = 0
+        self.export_elements = 0 # file count + 1 (exporting whole file)
+
 
     def load_files(self):
         audio_file_types = [".mp3", ".wav", ".mp4"]
@@ -68,18 +72,45 @@ class Editor:
             askokcancel(title="Invalid input", message="Value must be integer or floating point number")
             return False
 
-        self.unify_value.set("40")
-        print("START UNIFY")
+        self.unify_value.set("42")
 
         if len(audio_queue.keys()) > 0:
+            self.export_elements = len(audio_queue.keys()) + 1
             for i in audio_queue.keys():
-                print("UNIFY")
-                modify_volume(audio_queue.get(i).filename, val)
+                if self.can_export:
+                    modify_volume(audio_queue.get(i).filename, val)
+                    self.update_export_bar()
+                else:
+                    return False
             self.is_no_audio_update = True
             return True
         else:
             askokcancel(title="Empty queue", message="No audio files in a queue")
 
+
+    def cancel_export(self):
+        self.can_export = False
+
+
+    def add_export_ui(self):
+        self.download_toplevel = ctk.CTkToplevel(self.master)
+        self.download_toplevel.geometry("400x300")
+        self.download_toplevel.title("Downloading...")
+        self.download_toplevel.protocol("WM_DELETE_WINDOW", self.destroy)
+        self.download_toplevel.resizable(False, False)
+
+        self.loading_bar = ctk.CTkProgressBar(self.download_toplevel, orientation='horizontal', mode='determinate')
+        self.loading_bar.set(0)
+        self.cancel_button = ctk.CTkButton(self.download_toplevel, text="Cancel", command=self.destroy)
+        self.loading_bar.place(x=100, y=100)
+        self.cancel_button.place(x=130, y=250)
+        self.download_title = ctk.CTkLabel(self.download_toplevel, text="")
+        self.download_title.place(x=0, y=120)
+
+
+    def update_export_bar(self):
+        self.export_progress += 1
+        self.loading_bar.set(self.export_progress / self.export_elements)
     
     def clean_window(self):
         try:
@@ -120,8 +151,10 @@ class Editor:
             return
         
         def export_func():
+            self.add_export_ui()
             self.export_audio()
             self.clean_window()
+            self.export_progress = 0
  
         Thread(target=export_func, daemon=True).start()
 
@@ -132,7 +165,6 @@ class Editor:
         ])
 
         if file_name == "":
-            askokcancel(title="Invalid input", message="Empty filename")
             return
 
         print("START AUDIO JOIN")
@@ -142,6 +174,8 @@ class Editor:
             return
         print("END AUDIO JOIN")
         export_sounds(file_name)
+        self.loading_bar.set(1)
         print("EXPORTED AUDIO")
+        askokcancel(title="Finished", message="Export Finished!")
         return file_name
     

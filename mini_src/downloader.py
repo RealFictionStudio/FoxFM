@@ -49,6 +49,7 @@ class Downloading:
         self.video_count = len(urls)
         self.download_toplevel = ctk.CTkToplevel(self.master)
         self.download_toplevel.geometry("400x300")
+        self.download_toplevel.title("Downloading...")
         self.download_toplevel.protocol("WM_DELETE_WINDOW", self.destroy)
         self.download_toplevel.resizable(False, False)
         self.video_count = len(urls)
