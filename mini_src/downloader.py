@@ -103,7 +103,7 @@ class Downloader:
         self.url_label = ctk.CTkLabel(display, text="Paste video or playlist url")
         self.url_label.place(relx=0.35, rely=0.65, relwidth=0.3, relheight=0.06)
 
-        self.download_button = ctk.CTkButton(display,text="Download", fg_color="green", command=self.make_download)
+        self.download_button = ctk.CTkButton(display,text="Download", command=self.make_download)
         self.download_button.place(relx=0.4, rely=0.85, relwidth=0.2, relheight=0.1)
 
         self.super_display = super_display

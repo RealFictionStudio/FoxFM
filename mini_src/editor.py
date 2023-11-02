@@ -4,7 +4,7 @@ import tkinter as tk
 from tkinter import filedialog
 from tkinter.messagebox import askokcancel
 from widgets.clips import Clip, audio_queue
-from audio_modifiers import modify_volume, export_sounds
+from audio_modifiers import modify_volume, export_sounds, can_export
 from threading import Thread
 
 class Editor:
@@ -13,28 +13,19 @@ class Editor:
         
         self.display = display
 
-        self.joined_audio = None
-        self.joined_video = None
+        self.audio_files_widgets = ctk.CTkScrollableFrame(self.display, height=25, orientation="vertical")
+        self.audio_files_widgets.place(relx=0.20, rely=0.09, relwidth=0.24, relheight=0.73)
 
-        self.is_no_audio_update = True
-        self.is_no_video_update = True
-
-        self.tabview = ctk.CTkTabview(master=display)
-        self.tabview.place(relx=0.15, rely=0.02, relwidth=0.35, relheight=0.8)
-
-        self.tabview.add("audio files")
-        self.tabview.set("audio files")
-
-        self.audio_files_widgets = ctk.CTkScrollableFrame(self.tabview.tab("audio files"), width=300, height=460)
-        self.audio_files_widgets.place(relwidth=1)
-
+        audio_files_label = ctk.CTkLabel(display, text="Audio files queue")
+        audio_files_label.place(relx=0.27, rely=0.02, relwidth=0.1, relheight=0.05)
+        
         self.clip_load_button = ctk.CTkButton(display, text="Load Files", command=self.load_files)
         self.clip_load_button.place(relx=0.22, rely=0.85, relwidth=0.2, relheight=0.08)
 
         self.audio_track = ctk.CTkScrollableFrame(self.display, height=25, orientation="vertical")
         self.audio_track.place(relx=0.55, rely=0.09, relwidth=0.24, relheight=0.73)
 
-        self.unify_value = tk.StringVar(value=0)
+        self.unify_value = tk.StringVar(value=42)
         self.auto_unify_value = tk.BooleanVar(value=False)
 
         audio_queue_label = ctk.CTkLabel(display, text="Audio queue")
@@ -65,23 +56,18 @@ class Editor:
     def join_all_audio(self) -> bool:
         val = 0
         input_val = self.unify_value.get().strip()
-        print(input_val, type(input_val))
         try:
             val = float(input_val)
         except:
             askokcancel(title="Invalid input", message="Value must be integer or floating point number")
             return False
 
-        self.unify_value.set("42")
-
         if len(audio_queue.keys()) > 0:
             self.export_elements = len(audio_queue.keys()) + 1
             for i in audio_queue.keys():
-                if self.can_export:
-                    modify_volume(audio_queue.get(i).filename, val)
-                    self.update_export_bar()
-                else:
+                if not modify_volume(audio_queue.get(i).filename, val):
                     return False
+                self.update_export_bar()
             self.is_no_audio_update = True
             return True
         else:
@@ -89,22 +75,23 @@ class Editor:
 
 
     def cancel_export(self):
-        self.can_export = False
+        global can_export
+        can_export = False
 
 
     def add_export_ui(self):
-        self.download_toplevel = ctk.CTkToplevel(self.master)
-        self.download_toplevel.geometry("400x300")
-        self.download_toplevel.title("Downloading...")
-        self.download_toplevel.protocol("WM_DELETE_WINDOW", self.destroy)
-        self.download_toplevel.resizable(False, False)
+        self.export_toplevel = ctk.CTkToplevel(self.display)
+        self.export_toplevel.geometry("400x300")
+        self.export_toplevel.title("Exporting...")
+        self.export_toplevel.protocol("WM_DELETE_WINDOW", self.cancel_export)
+        self.export_toplevel.resizable(False, False)
 
-        self.loading_bar = ctk.CTkProgressBar(self.download_toplevel, orientation='horizontal', mode='determinate')
-        self.loading_bar.set(0)
-        self.cancel_button = ctk.CTkButton(self.download_toplevel, text="Cancel", command=self.destroy)
+        self.loading_bar = ctk.CTkProgressBar(self.export_toplevel, orientation='horizontal', mode='determinate')
         self.loading_bar.place(x=100, y=100)
+        self.loading_bar.set(0)
+        self.cancel_button = ctk.CTkButton(self.export_toplevel, text="Cancel", command=self.cancel_export)
         self.cancel_button.place(x=130, y=250)
-        self.download_title = ctk.CTkLabel(self.download_toplevel, text="")
+        self.download_title = ctk.CTkLabel(self.export_toplevel, text="")
         self.download_title.place(x=0, y=120)
 
 
@@ -115,6 +102,10 @@ class Editor:
     def clean_window(self):
         try:
             self.export_window.destroy()
+        except:
+            ...
+        try:
+            self.export_toplevel.destroy()
         except:
             ...
         self.export_window = None
@@ -146,15 +137,17 @@ class Editor:
 
     def export_with_settings(self):
 
-        if self.is_exporting:
+        if not can_export:
             askokcancel(title="In progress", message="Exporting is still in progress, wait until it ends")
             return
         
         def export_func():
-            self.add_export_ui()
-            self.export_audio()
-            self.clean_window()
+            if self.export_audio() is None:
+                self.clean_window()
             self.export_progress = 0
+
+            global can_export
+            can_export = True
  
         Thread(target=export_func, daemon=True).start()
 
@@ -168,6 +161,8 @@ class Editor:
             return
 
         print("START AUDIO JOIN")
+        self.add_export_ui()
+
         res = self.join_all_audio()
         if not res:
             print("**ERROR**")
@@ -176,6 +171,7 @@ class Editor:
         export_sounds(file_name)
         self.loading_bar.set(1)
         print("EXPORTED AUDIO")
+        self.clean_window()
         askokcancel(title="Finished", message="Export Finished!")
         return file_name
     

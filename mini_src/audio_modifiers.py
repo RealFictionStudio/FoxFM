@@ -8,6 +8,9 @@ import os
 all_modified_audios = []
 
 
+can_export = True
+
+
 def reset():
     all_modified_audios.clear()
 
@@ -19,9 +22,12 @@ def get_path_splitter() -> str:
         return "/"
     else:
         return "\\"
+
         
 
-def modify_volume(filename:str, volume_value:float):
+def modify_volume(filename:str, volume_value:float) -> bool:
+    global can_export
+
     audio_file = AudioSegment.from_file(filename)
     sil = silence.detect_silence(audio_file, silence_thresh=-40)
     sou = silence.detect_nonsilent(audio_file, silence_thresh=-40)
@@ -33,6 +39,8 @@ def modify_volume(filename:str, volume_value:float):
     
     for i in range(len(sou)):
         print("LOOP BOOST")
+        if not can_export:
+            return False
         boosted += audio_file[sou[i][0]:sou[i][1]].apply_gain(volume_boost)
         try:
             boosted += audio_file[sou[i][1]:sou[i+1][0]]
@@ -41,6 +49,8 @@ def modify_volume(filename:str, volume_value:float):
 
     boosted += audio_file[sil[-1][0]:sil[-1][1]]
     all_modified_audios.append(boosted)
+
+    return True
 
     
 
