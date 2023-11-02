@@ -31,8 +31,8 @@ class Downloading:
         self.cancel_button = ctk.CTkButton(self.download_toplevel, text="Cancel", command=self.destroy)
         self.loading_bar.place(x=100, y=100)
         self.cancel_button.place(x=130, y=250)
-        self.download_title = ctk.CTkLabel(self.download_toplevel, text="")
-        self.download_title.place(x=0, y=120)
+        self.download_title = ctk.CTkLabel(self.download_toplevel, text="", anchor="center")
+        self.download_title.place(x=20, y=120)
 
 
     def update_video_count(self):
