@@ -15,7 +15,7 @@ class Window:
         self.root = ctk.CTk()
         self.root.geometry("800x600")
         self.root.resizable(True, True)
-        self.root.title("FoxFM Studio v0.8")
+        self.root.title("FoxFM Studio v1.0")
         
         self.tabview = ctk.CTkTabview(master=self.root)
         self.tabview.pack(expand=True, fill="both")
