@@ -26,6 +26,9 @@ class Editor:
         self.audio_track.place(relx=0.55, rely=0.09, relwidth=0.24, relheight=0.73)
 
         self.unify_value = tk.StringVar(value=42)
+        self.fade_len_value = tk.StringVar(value=0)
+        self.deaf_len_value = tk.StringVar(value=0)
+
         self.auto_unify_value = tk.BooleanVar(value=False)
 
         audio_queue_label = ctk.CTkLabel(display, text="Audio queue")
@@ -54,18 +57,25 @@ class Editor:
 
 
     def join_all_audio(self) -> bool:
-        val = 0
-        input_val = self.unify_value.get().strip()
-        try:
-            val = float(input_val)
-        except:
-            askokcancel(title="Invalid input", message="Value must be integer or floating point number")
-            return False
+        modification_values = []
+        modification_values.append(self.unify_value.get().strip())
+        modification_values.append(self.fade_len_value.get().strip())
+        modification_values.append(self.deaf_len_value.get().strip())
+
+        for k, v in enumerate(modification_values):
+            try:
+                val = float(v)
+                modification_values[k] = val
+            except:
+                askokcancel(title="Invalid input", message="Value must be integer or floating point number")
+                return False
+            
+        print(modification_values)
 
         if len(audio_queue.keys()) > 0:
             self.export_elements = len(audio_queue.keys()) + 1
             for i in audio_queue.keys():
-                if not modify_volume(audio_queue.get(i).filename, val):
+                if not modify_volume(audio_queue.get(i).filename, modification_values):
                     return False
                 self.update_export_bar()
             self.is_no_audio_update = True
@@ -113,7 +123,7 @@ class Editor:
 
     def export_form(self):
         if len(audio_queue.keys()) == 0:
-            askokcancel(title="Empty queue", message="Audio and Video queue are empty")
+            askokcancel(title="Empty queue", message="Audio queue is empty")
             return
         elif self.export_window is not None:
             askokcancel(title="Operation in process", message="Export window already opened")
@@ -130,6 +140,18 @@ class Editor:
 
             boost_value = ctk.CTkEntry(self.export_window, textvariable=self.unify_value, placeholder_text="40")
             boost_value.place(x=250, y=170)
+
+            fade_len_label = ctk.CTkLabel(self.export_window, text="Fade in and out length")
+            fade_len_label.place(x=20, y=130)
+
+            fade_value = ctk.CTkEntry(self.export_window, textvariable=self.fade_len_value, placeholder_text="40")
+            fade_value.place(x=250, y=130)
+
+            deaf_break_label = ctk.CTkLabel(self.export_window, text="Silience length beetween files")
+            deaf_break_label.place(x=20, y=90)
+
+            deaf_break_value = ctk.CTkEntry(self.export_window, textvariable=self.deaf_len_value, placeholder_text="40")
+            deaf_break_value.place(x=250, y=90)
 
             export_button = ctk.CTkButton(self.export_window, text="Export", command=self.export_with_settings)
             export_button.place(x=130, y=250)
@@ -159,6 +181,9 @@ class Editor:
 
         if file_name == "":
             return
+        
+        if file_name.endswith(".wav.wav"):
+            file_name = file_name[:-3]
 
         print("START AUDIO JOIN")
         self.add_export_ui()

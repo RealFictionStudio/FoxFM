@@ -24,8 +24,8 @@ def get_path_splitter() -> str:
         return "\\"
 
         
-
-def modify_volume(filename:str, volume_value:float) -> bool:
+# 0 - volume 1 - fade 2 - deaf
+def modify_volume(filename:str, modification_values:list[float]) -> bool:
     global can_export
 
     audio_file = AudioSegment.from_file(filename)
@@ -33,9 +33,12 @@ def modify_volume(filename:str, volume_value:float) -> bool:
     sou = silence.detect_nonsilent(audio_file, silence_thresh=-40)
 
     boosted = AudioSegment.empty()
+
+    fade = int(modification_values[1] * 1000)
+    #boosted = boosted.fade_in(fade)
     boosted += audio_file[:sou[0][0]]
 
-    volume_boost = -abs(volume_value) - audio_file.dBFS
+    volume_boost = -abs(modification_values[0]) - audio_file.dBFS
     
     for i in range(len(sou)):
         print("LOOP BOOST")
@@ -48,6 +51,12 @@ def modify_volume(filename:str, volume_value:float) -> bool:
             ...
 
     boosted += audio_file[sil[-1][0]:sil[-1][1]]
+    #boosted = boosted.fade_out(fade)
+
+    deaf = modification_values[2] * 1000
+
+    boosted = boosted + AudioSegment.silent(duration=deaf)
+
     all_modified_audios.append(boosted)
 
     return True
@@ -72,4 +81,4 @@ def export_sounds(save_filename:str="") -> None:
         all_boosted.export(temp_name)
         return temp_name
     
-    all_boosted.export(f"{save_filename}.wav")
+    all_boosted.export(f"{save_filename}")
