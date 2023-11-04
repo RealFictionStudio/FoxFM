@@ -26,7 +26,8 @@ class Editor:
         self.audio_track.place(relx=0.55, rely=0.09, relwidth=0.24, relheight=0.73)
 
         self.unify_value = tk.StringVar(value=42)
-        self.fade_len_value = tk.StringVar(value=0)
+        self.fade_in_len_value = tk.StringVar(value=0)
+        self.fade_out_len_value = tk.StringVar(value=0)
         self.deaf_len_value = tk.StringVar(value=0)
 
         self.auto_unify_value = tk.BooleanVar(value=False)
@@ -59,7 +60,8 @@ class Editor:
     def join_all_audio(self) -> bool:
         modification_values = []
         modification_values.append(self.unify_value.get().strip())
-        modification_values.append(self.fade_len_value.get().strip())
+        modification_values.append(self.fade_in_len_value.get().strip())
+        modification_values.append(self.fade_out_len_value.get().strip())
         modification_values.append(self.deaf_len_value.get().strip())
 
         for k, v in enumerate(modification_values):
@@ -135,23 +137,29 @@ class Editor:
             self.export_window.title("Export")
             self.export_window.protocol("WM_DELETE_WINDOW", self.clean_window)
 
+            deaf_break_label = ctk.CTkLabel(self.export_window, text="Silience length beetween files")
+            deaf_break_label.place(x=20, y=50)
+
+            deaf_break_value = ctk.CTkEntry(self.export_window, textvariable=self.deaf_len_value, placeholder_text="40")
+            deaf_break_value.place(x=250, y=50)
+
+            fade_in_len_label = ctk.CTkLabel(self.export_window, text="Fade-in length")
+            fade_in_len_label.place(x=20, y=90)
+
+            fade_in_value = ctk.CTkEntry(self.export_window, textvariable=self.fade_in_len_value, placeholder_text="40")
+            fade_in_value.place(x=250, y=90)
+
+            fade_out_len_label = ctk.CTkLabel(self.export_window, text="Fade-out length")
+            fade_out_len_label.place(x=20, y=130)
+
+            fade_out_value = ctk.CTkEntry(self.export_window, textvariable=self.fade_out_len_value, placeholder_text="40")
+            fade_out_value.place(x=250, y=130)
+
             modify_audio_label = ctk.CTkLabel(self.export_window, text="Audio volume modifier")
             modify_audio_label.place(x=20, y=170)
 
             boost_value = ctk.CTkEntry(self.export_window, textvariable=self.unify_value, placeholder_text="40")
             boost_value.place(x=250, y=170)
-
-            fade_len_label = ctk.CTkLabel(self.export_window, text="Fade in and out length")
-            fade_len_label.place(x=20, y=130)
-
-            fade_value = ctk.CTkEntry(self.export_window, textvariable=self.fade_len_value, placeholder_text="40")
-            fade_value.place(x=250, y=130)
-
-            deaf_break_label = ctk.CTkLabel(self.export_window, text="Silience length beetween files")
-            deaf_break_label.place(x=20, y=90)
-
-            deaf_break_value = ctk.CTkEntry(self.export_window, textvariable=self.deaf_len_value, placeholder_text="40")
-            deaf_break_value.place(x=250, y=90)
 
             export_button = ctk.CTkButton(self.export_window, text="Export", command=self.export_with_settings)
             export_button.place(x=130, y=250)
