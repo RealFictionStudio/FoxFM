@@ -164,4 +164,5 @@ cython_debug/
 *.mp4
 test*.py
 *.gz
+*.tar.gz
 .vscode/
