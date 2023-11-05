@@ -28,6 +28,14 @@ def get_path_splitter() -> str:
 def modify_volume(filename:str, modification_values:list[float]) -> bool:
     global can_export
 
+    for k, v in enumerate(modification_values):
+        if v is None:
+            match k:
+                case 0:
+                    modification_values[k] = 30
+                case _:
+                    modification_values[k] = 0
+
     audio_file = AudioSegment.from_file(filename)
     sil = silence.detect_silence(audio_file, silence_thresh=-40)
     sou = silence.detect_nonsilent(audio_file, silence_thresh=-40)

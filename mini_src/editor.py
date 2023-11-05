@@ -65,6 +65,9 @@ class Editor:
         modification_values.append(self.deaf_len_value.get().strip())
 
         for k, v in enumerate(modification_values):
+            if v == "":
+                modification_values[k] = None
+                continue
             try:
                 val = float(v)
                 modification_values[k] = val
