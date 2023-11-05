@@ -31,14 +31,6 @@ class Downloader:
 
         self.downloading_bar_object = Progressbar(self.downloading, mode="determinate", orient="horizontal")
         self.downloading_bar_object.place(relx=0.15, rely=0.5, relwidth=0.8, relheight=0.1)
-
-    def get_path_splitter(self) -> str:
-        p = os.getcwd()
-
-        if len(p.split("/")) > 1:
-            return "/"
-        else:
-            return "\\"
         
 
     def download_playlist(self, playlist_url:str, download_location:str) -> None:
