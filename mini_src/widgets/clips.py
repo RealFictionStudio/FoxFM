@@ -1,6 +1,5 @@
 import customtkinter as ctk
 from tkinter.messagebox import askokcancel
-from copy import deepcopy
 from moviepy.editor import AudioFileClip
 
 pallet_id = 0
