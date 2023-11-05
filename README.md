@@ -49,6 +49,7 @@ You will be prompted with export form window. There you can type:
   * Value can be both positive or negative;
   * Silience starts from `42` or `-42`;
   * If you type number between `5` and `-5` (including 0) file will be as laud as if you typed `5` or `-5`. You can't get higher volume values;
+  * If you leave the entry blank the resault will be as if you typed 30
 
 If all values are typed in as you wished, click `Export` button and wait until it finishes. It shouldn't take longer than your selected audio length summarised.
 
