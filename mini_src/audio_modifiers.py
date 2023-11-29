@@ -7,7 +7,6 @@ import os
 
 all_modified_audios = []
 
-
 can_export = True
 
 
@@ -60,9 +59,11 @@ def modify_volume(filename:str, modification_values:list[float]) -> bool:
     sound_duration = len(boosted)
 
     fade_in = int(modification_values[1] * 1000)
-    boosted = boosted.fade(from_gain=-120.0, start=0, duration=fade_in)
+    if fade_in > 0:
+        boosted = boosted.fade(from_gain=-120.0, start=0, duration=fade_in)
     fade_out = int(modification_values[2] * 1000)
-    boosted = boosted.fade(to_gain=-120.0, start=sound_duration-fade_out, duration=fade_out)
+    if fade_out > 0:
+        boosted = boosted.fade(to_gain=-120.0, start=sound_duration-fade_out, duration=fade_out)
 
     deaf = modification_values[3] * 1000
 
@@ -88,8 +89,8 @@ def export_sounds(save_filename:str="") -> None:
         if not os.path.exists(os.getcwd() + splitter + "temp"):
             os.mkdir("temp")
 
-        temp_name = f"temp{splitter}temp_{time.time()}.wav"
-        all_boosted.export(temp_name)
+        temp_name = f"temp{splitter}temp_{time.time()}"
+        all_boosted.export(temp_name, format='wav')
         return temp_name
     
-    all_boosted.export(f"{save_filename}")
+    all_boosted.export(f"{save_filename}", format='wav')
