@@ -93,4 +93,4 @@ def export_sounds(save_filename:str="") -> None:
         all_boosted.export(temp_name, format='wav')
         return temp_name
     
-    all_boosted.export(f"{save_filename}", format='wav')
+    all_boosted.export(f"{save_filename}", format='wav', parameters=["-ac", "1"])
