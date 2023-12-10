@@ -1,7 +1,7 @@
 import threading
 import customtkinter as ctk
 from tkinter.filedialog import askopenfilename
-from tkinter.ttk import Progressbar
+from tkinter.ttk import Progressbar, Style
 from tkinter import VERTICAL
 import wave
 import pyaudio
@@ -28,7 +28,10 @@ class Player:
         self.file_name_label = ctk.CTkLabel(display, text="Load a file", font=("Arial", 20))
         self.file_name_label.place(relx=0.05, rely=0.25, relwidth=0.4, relheight=0.1)
 
-        self.progressbar = Progressbar(display, orient=VERTICAL, mode='determinate', maximum=100, value=0)
+        s = Style()
+        s.configure("green.Vertical.TProgressbar", foreground='grey', background='green')
+
+        self.progressbar = Progressbar(display, orient=VERTICAL, style="green.Vertical.TProgressbar", mode='determinate', maximum=100, value=0)
         self.progressbar.place(relx=0.65, rely=0.2, relwidth=0.25, relheight=0.6)
 
 
