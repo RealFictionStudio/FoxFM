@@ -1,7 +1,8 @@
 import threading
 import customtkinter as ctk
 from tkinter.filedialog import askopenfilename
-from tkinter.messagebox import askokcancel
+from tkinter.ttk import Progressbar
+from tkinter import VERTICAL
 import wave
 import pyaudio
 
@@ -24,8 +25,11 @@ class Player:
         self.device_selector.set(str(self.get_default_output_device()))
         self.device_selector.place(relx=0.05, rely=0.58, relwidth=0.4)
 
-        self.file_name_label = ctk.CTkLabel(display, text="", font=("Arial", 20))
+        self.file_name_label = ctk.CTkLabel(display, text="Load a file", font=("Arial", 20))
         self.file_name_label.place(relx=0.05, rely=0.25, relwidth=0.4, relheight=0.1)
+
+        self.progressbar = Progressbar(display, orient=VERTICAL, mode='determinate', maximum=100, value=0)
+        self.progressbar.place(relx=0.65, rely=0.2, relwidth=0.25, relheight=0.6)
 
 
     def select_file(self):
@@ -59,9 +63,10 @@ class Player:
     
 
     def play_button(self):
-        texts = ["Play", "Stop"]
-        self.can_play = not self.can_play
-        self.play_object.configure(text=texts[int(self.can_play)])
+        if self.file:
+            texts = ["Play", "Stop"]
+            self.can_play = not self.can_play
+            self.play_object.configure(text=texts[int(self.can_play)])
 
 
     def play_file(self):
@@ -86,13 +91,22 @@ class Player:
 
         # Read data in chunks
         data = wf.readframes(CHUNK)
-
+        index = 0
         # Play the sound by writing the audio data to the stream
         while data != '':
             if self.can_play:
                 dl = list(data)
+                val = (sum(dl)/len(dl))%100
+                #print(val)
+                if index >= 3:
+                    self.progressbar['value'] = val
+                    index = 0
+
+                index += 0.8
                 stream.write(data)
                 data = wf.readframes(CHUNK)
+            else:
+                self.progressbar['value'] = 0
             
             if filename != self.file:
                 break
