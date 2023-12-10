@@ -54,8 +54,10 @@ def modify_volume(filename:str, modification_values:list[float]) -> bool:
         except IndexError:
             ...
 
-    boosted += audio_file[sil[-1][0]:sil[-1][1]]
-
+    try:
+        boosted += audio_file[sil[-1][0]:sil[-1][1]]
+    except:
+        ...
     sound_duration = len(boosted)
 
     fade_in = int(modification_values[1] * 1000)
