@@ -40,12 +40,12 @@ class Player:
         if self.file == "":
             return
         
-        self.file = self.file.split('/')[-1]
-        self.file = self.file.split('\\')[-1]
+        filename = self.file.split('/')[-1]
+        filename = filename.split('\\')[-1]
         
-        if len(self.file) > 45:
-            self.file = self.file[:45]
-        self.file_name_label.configure(text=self.file)
+        if len(filename) > 45:
+            filename = filename[:45]
+        self.file_name_label.configure(text=filename)
 
         threading.Thread(target=self.play_file, daemon=True).start()
         
