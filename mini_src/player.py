@@ -4,7 +4,8 @@ from tkinter.filedialog import askopenfilename
 from tkinter.ttk import Progressbar, Style
 from tkinter import VERTICAL
 import wave
-import pyaudio
+from pyaudio import PyAudio
+from time import sleep
 
 CHUNK = 1024
 
@@ -12,6 +13,7 @@ class Player:
     def __init__(self, display) -> None:
         self.file = ""
         self.can_play = False
+        self.timing = False
 
         self.devices:dict
 
@@ -34,6 +36,9 @@ class Player:
         self.progressbar = Progressbar(display, orient=VERTICAL, style="green.Vertical.TProgressbar", mode='determinate', maximum=100, value=0)
         self.progressbar.place(relx=0.65, rely=0.2, relwidth=0.25, relheight=0.6)
 
+        self.timer = ctk.CTkLabel(display, text="00:00:00", font=("Arial", 60))
+        self.timer.place(relx=0.05, rely=0.43, relwidth=0.4, relheight=0.1)
+
 
     def select_file(self):
         self.file = askopenfilename(title="Select audio file", filetypes=[('Wave files', '*.wav')])
@@ -47,22 +52,46 @@ class Player:
             filename = filename[:45]
         self.file_name_label.configure(text=filename)
 
+        self.timing = True
+
         threading.Thread(target=self.play_file, daemon=True).start()
+        threading.Thread(target=self.run_timer, daemon=True).start()
         
 
     def get_default_output_device(self):
-        p = pyaudio.PyAudio()
+        p = PyAudio()
         dn = p.get_default_output_device_info().get('name')
         p.terminate()
         return dn
     
 
     def get_output_devices(self):
-        p = pyaudio.PyAudio()
+        p = PyAudio()
         ol = [p.get_device_info_by_index(d).get('name') for d in range(p.get_device_count()) if p.get_device_info_by_index(d).get('maxOutputChannels') > 0]
         p.terminate()
         self.devices = dict(zip(ol, [i for i in range(len(ol))]))
         return ol
+    
+
+    def run_timer(self):
+        secs, mins, hours = 0, 0, 0
+        while self.timing:
+            print("TIME")
+            if self.can_play:
+                if secs < 59:
+                    secs += 1
+                else:
+                    secs=0
+                    if mins < 59:
+                        mins += 1
+                    else:
+                        mins=0
+                        hours += 1
+
+                self.timer.configure(text=f"{str(hours).rjust(2,'0')}:{str(mins).rjust(2,'0')}:{str(secs).rjust(2,'0')}")
+                sleep(1)
+    
+        self.timer.configure(text="00:00:00")
     
 
     def play_button(self):
@@ -81,7 +110,7 @@ class Player:
         wf = wave.open(self.file, 'rb')
 
         # Create an interface to PortAudio
-        p = pyaudio.PyAudio()
+        p = PyAudio()
 
         # Open a .Stream object to write the WAV file to
         # 'output = True' indicates that the sound will be played rather than recorded
@@ -116,6 +145,7 @@ class Player:
                 break
 
         self.can_play = False
+        self.timing = False
         self.play_object.configure(text="Play")
 
         # Close and terminate the stream
