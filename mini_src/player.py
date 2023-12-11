@@ -11,6 +11,7 @@ CHUNK = 1024
 
 class Player:
     def __init__(self, display) -> None:
+        self.is_existing = True
         self.file = ""
         self.can_play = False
         self.timing = False
@@ -39,6 +40,9 @@ class Player:
         self.timer = ctk.CTkLabel(display, text="00:00:00", font=("Arial", 60))
         self.timer.place(relx=0.05, rely=0.43, relwidth=0.4, relheight=0.1)
 
+        self.timer_thread:threading.Thread
+        self.playing_thread:threading.Thread
+
 
     def select_file(self):
         recent_file = self.file
@@ -53,9 +57,11 @@ class Player:
             filename = filename[:45]
         self.file_name_label.configure(text=filename)
 
-        if recent_file != self.file:
-            threading.Thread(target=self.play_file, daemon=True).start()
-            threading.Thread(target=self.run_timer, daemon=True).start()
+        if recent_file != self.file and self.file != ():
+            self.playing_thread = threading.Thread(target=self.play_file, daemon=True)
+            self.playing_thread.start()
+            self.timer_thread = threading.Thread(target=self.run_timer, daemon=True)
+            self.timer_thread.start()
         
 
     def get_default_output_device(self):
@@ -94,6 +100,9 @@ class Player:
 
             if self.file != filename and self.file != ():
                 self.timer.configure(text="00:00:00")
+                return
+            
+            if self.is_existing == False:
                 return
     
 
@@ -144,7 +153,7 @@ class Player:
             else:
                 self.progressbar['value'] = 0
             
-            if filename != self.file and self.file.strip() != "":
+            if filename != self.file and self.file.strip() != "" or self.is_existing == False:
                 break
 
         self.can_play = False

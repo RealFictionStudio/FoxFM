@@ -17,6 +17,7 @@ class Window:
         self.root.geometry("800x600")
         self.root.resizable(True, True)
         self.root.title("FoxFM Studio v1.2")
+        self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
         
         self.tabview = ctk.CTkTabview(master=self.root)
         self.tabview.pack(expand=True, fill="both")
@@ -29,12 +30,16 @@ class Window:
 
         self.tabview.set("download")
 
+    def on_closing(self):
+        self.player.is_existing = False
+        self.root.destroy()
+
 
     def run_app(self) -> None:
         #Recorder(self.tabview.tab("record"))
         Editor(self.tabview.tab("  edit  "))
         Downloader(self.tabview.tab("download"), self.root)
-        Player(self.tabview.tab("player"))
+        self.player = Player(self.tabview.tab("player"))
         self.root.mainloop()
 
 
