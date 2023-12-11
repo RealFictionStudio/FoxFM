@@ -39,8 +39,6 @@ class Player:
         self.timer = ctk.CTkLabel(display, text="00:00:00", font=("Arial", 60))
         self.timer.place(relx=0.05, rely=0.43, relwidth=0.4, relheight=0.1)
 
-        threading.Thread(target=self.run_timer, daemon=True).start()
-
 
     def select_file(self):
         recent_file = self.file
@@ -57,6 +55,7 @@ class Player:
 
         if recent_file != self.file:
             threading.Thread(target=self.play_file, daemon=True).start()
+            threading.Thread(target=self.run_timer, daemon=True).start()
         
 
     def get_default_output_device(self):
@@ -79,7 +78,6 @@ class Player:
         self.timer.configure(text="00:00:00")
         secs, mins, hours = 0, 0, 0
         while True:
-            print("TIME")
             if self.can_play:
                 if secs < 59:
                     secs += 1
@@ -95,9 +93,8 @@ class Player:
                 sleep(1)
 
             if self.file != filename and self.file != ():
-                filename = self.file
                 self.timer.configure(text="00:00:00")
-                secs, mins, hours = 0, 0, 0
+                return
     
 
     def play_button(self):
