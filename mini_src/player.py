@@ -41,8 +41,9 @@ class Player:
 
 
     def select_file(self):
+        recent_file = self.file
         self.file = askopenfilename(title="Select audio file", filetypes=[('Wave files', '*.wav')])
-        if self.file == "":
+        if self.file == "" or self.file == ():
             return
         
         filename = self.file.split('/')[-1]
@@ -52,10 +53,9 @@ class Player:
             filename = filename[:45]
         self.file_name_label.configure(text=filename)
 
-        self.timing = True
-
-        threading.Thread(target=self.play_file, daemon=True).start()
-        threading.Thread(target=self.run_timer, daemon=True).start()
+        if recent_file != self.file:
+            threading.Thread(target=self.play_file, daemon=True).start()
+            threading.Thread(target=self.run_timer, daemon=True).start()
         
 
     def get_default_output_device(self):
@@ -74,6 +74,8 @@ class Player:
     
 
     def run_timer(self):
+        self.timing = True
+        self.timer.configure(text="00:00:00")
         secs, mins, hours = 0, 0, 0
         while self.timing:
             print("TIME")
@@ -90,8 +92,6 @@ class Player:
 
                 self.timer.configure(text=f"{str(hours).rjust(2,'0')}:{str(mins).rjust(2,'0')}:{str(secs).rjust(2,'0')}")
                 sleep(1)
-    
-        self.timer.configure(text="00:00:00")
     
 
     def play_button(self):
@@ -141,7 +141,7 @@ class Player:
             else:
                 self.progressbar['value'] = 0
             
-            if filename != self.file:
+            if filename != self.file and self.file.strip() != "":
                 break
 
         self.can_play = False
