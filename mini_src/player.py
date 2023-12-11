@@ -21,9 +21,9 @@ class Player:
         self.load_file = ctk.CTkButton(display, text="Load file", command=self.select_file)
         self.load_file.place(relx=0.05, rely=0.77, relwidth=0.4, relheight=0.1)
 
-        self.device_selector = ctk.CTkOptionMenu(display, values=self.get_output_devices())
-        self.device_selector.set(str(self.get_default_output_device()))
-        self.device_selector.place(relx=0.05, rely=0.58, relwidth=0.4)
+        #self.device_selector = ctk.CTkOptionMenu(display, values=self.get_output_devices())
+        #self.device_selector.set(str(self.get_default_output_device()))
+        #self.device_selector.place(relx=0.05, rely=0.58, relwidth=0.4)
 
         self.file_name_label = ctk.CTkLabel(display, text="Load a file", font=("Arial", 20))
         self.file_name_label.place(relx=0.05, rely=0.25, relwidth=0.4, relheight=0.1)
@@ -89,7 +89,6 @@ class Player:
                         channels = wf.getnchannels(),
                         rate = wf.getframerate(),
                         output = True,
-                        output_device_index=self.devices.get(self.device_selector.get())
                         )
 
         # Read data in chunks
@@ -99,6 +98,8 @@ class Player:
         while data != '':
             if self.can_play:
                 dl = list(data)
+                if len(dl) == 0:
+                    break
                 val = (sum(dl)/len(dl))%100
                 #print(val)
                 if index >= 3:
@@ -113,6 +114,9 @@ class Player:
             
             if filename != self.file:
                 break
+
+        self.can_play = False
+        self.play_object.configure(text="Play")
 
         # Close and terminate the stream
         stream.close()
