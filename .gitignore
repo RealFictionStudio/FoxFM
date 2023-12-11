@@ -165,4 +165,6 @@ cython_debug/
 test*.py
 *.gz
 *.tar.gz
+*.zip
 .vscode/
+releases/
