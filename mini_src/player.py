@@ -5,7 +5,6 @@ from tkinter.ttk import Progressbar, Style
 from tkinter import VERTICAL
 import wave
 from pyaudio import PyAudio
-from time import sleep
 
 CHUNK = 1024
 
@@ -40,7 +39,7 @@ class Player:
         self.timer = ctk.CTkLabel(display, text="00:00:00", font=("Arial", 60))
         self.timer.place(relx=0.05, rely=0.43, relwidth=0.4, relheight=0.1)
 
-        self.timer_thread:threading.Thread
+        self.secs, self.mins, self.hours = 0,0,0
         self.playing_thread:threading.Thread
 
 
@@ -60,8 +59,6 @@ class Player:
         if recent_file != self.file and self.file != ():
             self.playing_thread = threading.Thread(target=self.play_file, daemon=True)
             self.playing_thread.start()
-            self.timer_thread = threading.Thread(target=self.run_timer, daemon=True)
-            self.timer_thread.start()
         
 
     def get_default_output_device(self):
@@ -80,30 +77,17 @@ class Player:
     
 
     def run_timer(self):
-        filename = self.file
-        self.timer.configure(text="00:00:00")
-        secs, mins, hours = 0, 0, 0
-        while True:
-            if self.can_play:
-                if secs < 59:
-                    secs += 1
-                else:
-                    secs=0
-                    if mins < 59:
-                        mins += 1
-                    else:
-                        mins=0
-                        hours += 1
+        if self.secs < 59:
+            self.secs += 1
+        else:
+            self.secs = 0
+            if self.mins < 59:
+                self.mins += 1
+            else:
+                self.mins = 0
+                self.hours += 1
 
-                self.timer.configure(text=f"{str(hours).rjust(2,'0')}:{str(mins).rjust(2,'0')}:{str(secs).rjust(2,'0')}")
-                sleep(1)
-
-            if self.file != filename and self.file != ():
-                self.timer.configure(text="00:00:00")
-                return
-            
-            if self.is_existing == False:
-                return
+        self.timer.configure(text=f"{str(self.hours).rjust(2,'0')}:{str(self.mins).rjust(2,'0')}:{str(self.secs).rjust(2,'0')}")
     
 
     def play_button(self):
@@ -132,17 +116,28 @@ class Player:
                         output = True,
                         )
 
+        duration = wf.getnframes() / float(wf.getframerate())
+        timer_chunk = duration / (wf.getnframes() / CHUNK)
         # Read data in chunks
         data = wf.readframes(CHUNK)
         index = 0
+        timer = 0.0
+        self.secs, self.mins, self.hours = 0,0,0
         # Play the sound by writing the audio data to the stream
         while data != '':
             if self.can_play:
+
+                if timer >= 1:
+                    timer = 0.0
+                    self.run_timer()
+                else:
+                    timer += timer_chunk
+
                 dl = list(data)
                 if len(dl) == 0:
                     break
                 val = (sum(dl)/len(dl))%100
-                #print(val)
+
                 if index >= 3:
                     self.progressbar['value'] = val
                     index = 0
@@ -163,4 +158,3 @@ class Player:
         # Close and terminate the stream
         stream.close()
         p.terminate()
-
