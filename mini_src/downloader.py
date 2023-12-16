@@ -4,6 +4,7 @@ from tkinter.filedialog import askdirectory
 from tkinter.messagebox import askokcancel
 import threading
 import os
+from pathlib import Path
 
 class Downloading:
     def __init__(self, master_display) -> None:
@@ -70,6 +71,11 @@ class Downloading:
             stream = video.streams.get_audio_only()
             filesize = stream.filesize
 
+            if f"{video.title}.mp4" in os.listdir(download_location):
+                print("FILE EXIST")
+                with open(f"{download_location}{os.sep}{video.title}.mp4", 'wb') as f:
+                    f.write("".encode())
+
             with open(f"{download_location}{os.sep}{video.title}.mp4", 'wb') as f:
                 stream = request.stream(stream.url)
                 downloaded = 0
@@ -86,8 +92,8 @@ class Downloading:
                         self.loading_bar.set(downloaded / filesize)
                     else:
                         break
-        except:
-            pass
+        except Exception as e:
+            print(e)
 
         self.update_video_count()
 
@@ -121,7 +127,7 @@ class Downloader:
 
         loc = askdirectory(title="Choose download directory")
 
-        if type(loc) == tuple:
+        if type(loc) == tuple or loc == "":
             print("EMPTY DIR")
             return
             
