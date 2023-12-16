@@ -16,7 +16,7 @@ class Window:
         self.root = ctk.CTk()
         self.root.geometry("800x600")
         self.root.resizable(True, True)
-        self.root.title("FoxFM Studio v1.2")
+        self.root.title("FoxFM Studio v1.2.1")
         self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
         
         self.tabview = ctk.CTkTabview(master=self.root)
