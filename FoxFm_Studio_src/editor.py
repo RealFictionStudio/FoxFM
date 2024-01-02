@@ -6,6 +6,7 @@ from tkinter.messagebox import askokcancel
 from widgets.clips import Clip, audio_queue
 from audio_modifiers import modify_volume, export_sounds, can_export
 from threading import Thread
+import platform
 
 class Editor:
 
@@ -25,6 +26,10 @@ class Editor:
         self.audio_track = ctk.CTkScrollableFrame(self.display, height=25, orientation="vertical")
         self.audio_track.place(relx=0.55, rely=0.09, relwidth=0.24, relheight=0.73)
 
+        if platform.uname().system == 'Linux':
+            self.audio_track.bind_all("<Button-4>", lambda e: self.audio_track._parent_canvas.yview("scroll", 1, "units"))
+            self.audio_track.bind_all("<Button-5>", lambda e: self.audio_track._parent_canvas.yview("scroll", -1, "units"))
+            
         self.unify_value = tk.StringVar(value=42)
         self.fade_in_len_value = tk.StringVar(value=0)
         self.fade_out_len_value = tk.StringVar(value=0)
