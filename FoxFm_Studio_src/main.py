@@ -1,4 +1,5 @@
 from widgets.window import window
 
 
-window.run_app()
+if __name__ == "__main__":
+    window.run_app()

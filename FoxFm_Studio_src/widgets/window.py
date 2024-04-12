@@ -3,7 +3,7 @@ import customtkinter as ctk
 #from recorder import Recorder
 from editor import Editor
 from downloader import Downloader
-from player import Player
+#from player import Player
 
 #from load_config import load_config_settings
 
