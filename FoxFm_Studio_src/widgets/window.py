@@ -26,12 +26,12 @@ class Window:
         #self.tabview.add("record")
         self.tabview.add("  edit  ")
         #self.tabview.add("upload")
-        self.tabview.add("player")
+        #self.tabview.add("player")
 
         self.tabview.set("download")
 
     def on_closing(self):
-        self.player.is_existing = False
+        #self.player.is_existing = False
         self.root.destroy()
 
 
@@ -39,7 +39,7 @@ class Window:
         #Recorder(self.tabview.tab("record"))
         Editor(self.tabview.tab("  edit  "))
         Downloader(self.tabview.tab("download"), self.root)
-        self.player = Player(self.tabview.tab("player"))
+        #self.player = Player(self.tabview.tab("player"))
         self.root.mainloop()
 
 
