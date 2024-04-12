@@ -1,4 +1,5 @@
 from pydub import AudioSegment, silence
+from pydub.effects import normalize
 import time
 import os
 
@@ -31,11 +32,13 @@ def modify_volume(filename:str, modification_values:list[float]) -> bool:
         if v is None:
             match k:
                 case 0:
-                    modification_values[k] = 30
+                    modification_values[k] = 1
                 case _:
                     modification_values[k] = 0
 
     audio_file = AudioSegment.from_file(filename)
+    boosted = normalize(audio_file, modification_values[0])
+    """
     sil = silence.detect_silence(audio_file, silence_thresh=-40)
     sou = silence.detect_nonsilent(audio_file, silence_thresh=-40)
 
@@ -58,6 +61,8 @@ def modify_volume(filename:str, modification_values:list[float]) -> bool:
         boosted += audio_file[sil[-1][0]:sil[-1][1]]
     except:
         ...
+    sound_duration = len(boosted)
+"""
     sound_duration = len(boosted)
 
     fade_in = int(modification_values[1] * 1000)

@@ -1,7 +1,6 @@
 import os
 from pytube import YouTube, request
 from tkinter.messagebox import askokcancel
-from tkinter.filedialog import askdirectory
 
 def download_video(video_url:str, download_location:str) -> None:
         try:
@@ -32,6 +31,3 @@ def download_video(video_url:str, download_location:str) -> None:
         except Exception as e:
             print(e)
             askokcancel(title="Error occured", message=str(e))
-
-
-download_video(input("URL: "), askdirectory())
