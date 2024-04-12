@@ -1,4 +1,5 @@
-from pydub import AudioSegment, silence
+from pydub import AudioSegment
+from pydub.effects import normalize
 import time
 import os
 
@@ -31,33 +32,13 @@ def modify_volume(filename:str, modification_values:list[float]) -> bool:
         if v is None:
             match k:
                 case 0:
-                    modification_values[k] = 30
+                    modification_values[k] = 1
                 case _:
                     modification_values[k] = 0
 
     audio_file = AudioSegment.from_file(filename)
-    sil = silence.detect_silence(audio_file, silence_thresh=-40)
-    sou = silence.detect_nonsilent(audio_file, silence_thresh=-40)
+    boosted = normalize(audio_file, modification_values[0])
 
-    boosted = AudioSegment.empty()
-    boosted += audio_file[:sou[0][0]]
-
-    volume_boost = -abs(modification_values[0]) - audio_file.dBFS
-    
-    for i in range(len(sou)):
-        print("LOOP BOOST")
-        if not can_export:
-            return False
-        boosted += audio_file[sou[i][0]:sou[i][1]].apply_gain(volume_boost)
-        try:
-            boosted += audio_file[sou[i][1]:sou[i+1][0]]
-        except IndexError:
-            ...
-
-    try:
-        boosted += audio_file[sil[-1][0]:sil[-1][1]]
-    except:
-        ...
     sound_duration = len(boosted)
 
     fade_in = int(modification_values[1] * 1000)
@@ -95,4 +76,4 @@ def export_sounds(save_filename:str="") -> None:
         all_boosted.export(temp_name, format='wav')
         return temp_name
     
-    all_boosted.export(f"{save_filename}", format='wav', parameters=["-ac", "1"])
+    all_boosted.export(f"{save_filename}.wav", format='wav', parameters=["-ac", "1"])
